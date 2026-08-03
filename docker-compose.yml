@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: ragna-qdrant
+    ports:
+      - "6333:6333" # HTTP REST API
+      - "6334:6334" # gRPC API
+    volumes:
+      - qdrant_data:/qdrant/storage
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/readyz"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    container_name: ragna-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  ml-python:
+    build:
+      context: ./ml-python
+      dockerfile: Dockerfile
+    container_name: ragna-ml-python
+    environment:
+      - GRPC_PORT=50051
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+    ports:
+      - "50051:50051"
+    depends_on:
+      qdrant:
+        condition: service_healthy
+
+  gateway-go:
+    build:
+      context: ./gateway-go
+      dockerfile: Dockerfile
+    container_name: ragna-gateway-go
+    environment:
+      - PORT=8080
+      - ML_GRPC_TARGET=ml-python:50051
+      - REDIS_ADDR=redis:6379
+    ports:
+      - "8080:8080"
+    depends_on:
+      - ml-python
+      - redis
+
+volumes:
+  qdrant_data:
+  redis_data:

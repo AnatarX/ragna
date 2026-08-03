@@ -1,0 +1,8 @@
+gateway
+*.out
+*.exe
+
+.git/
+.gitignore
+.env
+README.md

@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package rag.v1;
+
+option go_package = "github.com/AnatarX/ragna/gateway-go/pkg/pb/rag/v1;ragv1";
+
+service RagService {
+  rpc Query (QueryRequest) returns (QueryResponse);
+
+  rpc StreamQuery (QueryRequest) returns (stream StreamQueryResponse);
+
+  rpc IngestDocument (IngestRequest) returns (IngestResponse);
+}
+
+message QueryRequest {
+  string query = 1;
+  int32 top_k = 2;
+  bool use_reranker = 3;
+}
+
+message DocumentChunk {
+  string id = 1;
+  string content = 2;
+  float score = 3;
+  map<string, string> metadata = 4;
+}
+
+message QueryResponse {
+  string answer = 1;
+  repeated DocumentChunk sources = 2;
+  float confidence_score = 3;
+}
+
+message StreamQueryResponse {
+  oneof payload {
+    string delta = 1;
+    DocumentChunk source = 2;
+  }
+}
+
+message IngestRequest {
+  string document_id = 1;
+  string title = 2;
+  string content = 3;
+  map<string, string> metadata = 4;
+}
+
+message IngestResponse {
+  string document_id = 1;
+  int32 chunks_created = 2;
+  bool success = 3;
+}
