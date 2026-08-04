@@ -2,9 +2,9 @@
 // versions:
 // - protoc-gen-go-grpc v1.6.2
 // - protoc             v7.35.1
-// source: api/v1/rag.proto
+// source: rag.proto
 
-package ragv1
+package v1
 
 import (
 	context "context"
@@ -22,6 +22,7 @@ const (
 	RagService_Query_FullMethodName          = "/rag.v1.RagService/Query"
 	RagService_StreamQuery_FullMethodName    = "/rag.v1.RagService/StreamQuery"
 	RagService_IngestDocument_FullMethodName = "/rag.v1.RagService/IngestDocument"
+	RagService_GetEmbedding_FullMethodName   = "/rag.v1.RagService/GetEmbedding"
 )
 
 // RagServiceClient is the client API for RagService service.
@@ -31,6 +32,7 @@ type RagServiceClient interface {
 	Query(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (*QueryResponse, error)
 	StreamQuery(ctx context.Context, in *QueryRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[StreamQueryResponse], error)
 	IngestDocument(ctx context.Context, in *IngestRequest, opts ...grpc.CallOption) (*IngestResponse, error)
+	GetEmbedding(ctx context.Context, in *EmbeddingRequest, opts ...grpc.CallOption) (*EmbeddingResponse, error)
 }
 
 type ragServiceClient struct {
@@ -80,6 +82,16 @@ func (c *ragServiceClient) IngestDocument(ctx context.Context, in *IngestRequest
 	return out, nil
 }
 
+func (c *ragServiceClient) GetEmbedding(ctx context.Context, in *EmbeddingRequest, opts ...grpc.CallOption) (*EmbeddingResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(EmbeddingResponse)
+	err := c.cc.Invoke(ctx, RagService_GetEmbedding_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // RagServiceServer is the server API for RagService service.
 // All implementations must embed UnimplementedRagServiceServer
 // for forward compatibility.
@@ -87,6 +99,7 @@ type RagServiceServer interface {
 	Query(context.Context, *QueryRequest) (*QueryResponse, error)
 	StreamQuery(*QueryRequest, grpc.ServerStreamingServer[StreamQueryResponse]) error
 	IngestDocument(context.Context, *IngestRequest) (*IngestResponse, error)
+	GetEmbedding(context.Context, *EmbeddingRequest) (*EmbeddingResponse, error)
 	mustEmbedUnimplementedRagServiceServer()
 }
 
@@ -105,6 +118,9 @@ func (UnimplementedRagServiceServer) StreamQuery(*QueryRequest, grpc.ServerStrea
 }
 func (UnimplementedRagServiceServer) IngestDocument(context.Context, *IngestRequest) (*IngestResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method IngestDocument not implemented")
+}
+func (UnimplementedRagServiceServer) GetEmbedding(context.Context, *EmbeddingRequest) (*EmbeddingResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetEmbedding not implemented")
 }
 func (UnimplementedRagServiceServer) mustEmbedUnimplementedRagServiceServer() {}
 func (UnimplementedRagServiceServer) testEmbeddedByValue()                    {}
@@ -174,6 +190,24 @@ func _RagService_IngestDocument_Handler(srv interface{}, ctx context.Context, de
 	return interceptor(ctx, in, info, handler)
 }
 
+func _RagService_GetEmbedding_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(EmbeddingRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(RagServiceServer).GetEmbedding(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: RagService_GetEmbedding_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(RagServiceServer).GetEmbedding(ctx, req.(*EmbeddingRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // RagService_ServiceDesc is the grpc.ServiceDesc for RagService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -189,6 +223,10 @@ var RagService_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "IngestDocument",
 			Handler:    _RagService_IngestDocument_Handler,
 		},
+		{
+			MethodName: "GetEmbedding",
+			Handler:    _RagService_GetEmbedding_Handler,
+		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
@@ -197,5 +235,5 @@ var RagService_ServiceDesc = grpc.ServiceDesc{
 			ServerStreams: true,
 		},
 	},
-	Metadata: "api/v1/rag.proto",
+	Metadata: "rag.proto",
 }

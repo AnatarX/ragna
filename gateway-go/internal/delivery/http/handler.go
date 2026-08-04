@@ -1,106 +1,130 @@
 package http
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
+	"strings"
 
-	pb "github.com/AnatarX/ragna/gateway-go/api/v1"
-	mlclient "github.com/AnatarX/ragna/gateway-go/internal/clients/ml_client"
+	"gateway-go/internal/cache"
+	"gateway-go/internal/grpcclient"
 )
 
 type Handler struct {
-	mlClient *mlclient.Client
+	mlClient MLClient
+	cache    *cache.SemanticCache
 }
 
-func NewHandler(mlClient *mlclient.Client) *Handler {
-	return &Handler{mlClient: mlClient}
+type MLClient interface {
+	GetEmbedding(ctx context.Context, query string) ([]float32, error)
+	StreamQuery(ctx context.Context, query string) (grpcclient.Stream, error)
 }
 
-type IngestPayload struct {
-	DocumentID string            `json:"document_id"`
-	Title      string            `json:"title"`
-	Content    string            `json:"content"`
-	Metadata   map[string]string `json:"metadata"`
+func NewHandler(mlClient MLClient, semanticCache *cache.SemanticCache) *Handler {
+	return &Handler{
+		mlClient: mlClient,
+		cache:    semanticCache,
+	}
 }
 
-func (h *Handler) HandleIngest(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	var req IngestPayload
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		http.Error(w, "Invalid request body", http.StatusBadRequest)
-		return
-	}
-
-	res, err := h.mlClient.IngestDocument(r.Context(), req.DocumentID, req.Title, req.Content, req.Metadata)
-	if err != nil {
-		log.Printf("[ERROR] Ingest document failed: %v", err)
-		http.Error(w, "Failed to ingest document", http.StatusInternalServerError)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(res)
-}
-
-func (h *Handler) HandleStreamQuery(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodGet {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
+func (h *Handler) StreamQuery(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
 	query := r.URL.Query().Get("q")
 	if query == "" {
 		http.Error(w, "Query parameter 'q' is required", http.StatusBadRequest)
 		return
 	}
 
+	flusher, ok := w.(http.Flusher)
+	if !ok {
+		http.Error(w, "Streaming unsupported!", http.StatusInternalServerError)
+		return
+	}
+
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
 	w.Header().Set("Connection", "keep-alive")
-	w.Header().Set("Access-Control-Allow-Origin", "*")
 
-	flusher, ok := w.(http.Flusher)
-	if !ok {
-		http.Error(w, "Streaming unsupported", http.StatusInternalServerError)
-		return
+	// 1. Получаем вектор запроса
+	vec, err := h.mlClient.GetEmbedding(ctx, query)
+	if err == nil && len(vec) > 0 {
+		// 2. Проверяем Семантический Кэш в Redis
+		cached, hit, cacheErr := h.cache.Get(ctx, vec)
+		if cacheErr == nil && hit {
+			w.Header().Set("X-Cache-Status", "HIT")
+
+			for _, doc := range cached.Sources {
+				sendSSE(w, flusher, "source", doc)
+			}
+			sendSSE(w, flusher, "delta", map[string]string{"text": cached.Answer})
+			sendSSE(w, flusher, "done", "[DONE]")
+			return
+		}
 	}
 
-	stream, err := h.mlClient.StreamQuery(r.Context(), query, 5, true)
+	// 3. Cache Miss -> Идем в ML Сервис
+	w.Header().Set("X-Cache-Status", "MISS")
+
+	stream, err := h.mlClient.StreamQuery(ctx, query)
 	if err != nil {
-		log.Printf("[ERROR] StreamQuery failed: %v", err)
-		fmt.Fprintf(w, "event: error\ndata: %s\n\n", "Failed to communicate with ML Engine")
-		flusher.Flush()
+		http.Error(w, fmt.Sprintf("ML service error: %v", err), http.StatusInternalServerError)
 		return
 	}
+
+	var fullAnswer strings.Builder
+	var sources []cache.SourceDoc
 
 	for {
 		resp, err := stream.Recv()
 		if err == io.EOF {
-			fmt.Fprintf(w, "event: done\ndata: [DONE]\n\n")
-			flusher.Flush()
 			break
 		}
 		if err != nil {
-			log.Printf("[ERROR] Error reading gRPC stream: %v", err)
 			break
 		}
 
-		switch payload := resp.Payload.(type) {
-		case *pb.StreamQueryResponse_Source:
-			data, _ := json.Marshal(payload.Source)
-			fmt.Fprintf(w, "event: source\ndata: %s\n\n", string(data))
-		case *pb.StreamQueryResponse_Delta:
-			data, _ := json.Marshal(map[string]string{"text": payload.Delta})
-			fmt.Fprintf(w, "event: delta\ndata: %s\n\n", string(data))
+		if resp.GetSource() != nil {
+			src := resp.GetSource()
+			doc := cache.SourceDoc{
+				ID:       src.GetId(),
+				Content:  src.GetContent(),
+				Score:    src.GetScore(),
+				Metadata: src.GetMetadata(),
+			}
+			sources = append(sources, doc)
+			sendSSE(w, flusher, "source", doc)
 		}
 
-		flusher.Flush()
+		if resp.GetDelta() != "" {
+			delta := resp.GetDelta()
+			fullAnswer.WriteString(delta)
+			sendSSE(w, flusher, "delta", map[string]string{"text": delta})
+		}
 	}
+
+	sendSSE(w, flusher, "done", "[DONE]")
+
+	// 4. Сохраняем в Семантический Кэш для последующих похожих запросов
+	if len(vec) > 0 && fullAnswer.Len() > 0 {
+		cachePayload := &cache.CachedResponse{
+			Answer:  fullAnswer.String(),
+			Sources: sources,
+		}
+		_ = h.cache.Set(ctx, query, vec, cachePayload)
+	}
+}
+
+func sendSSE(w http.ResponseWriter, flusher http.Flusher, event string, data interface{}) {
+	var payload []byte
+	switch v := data.(type) {
+	case string:
+		payload = []byte(v)
+	default:
+		payload, _ = json.Marshal(v)
+	}
+
+	fmt.Fprintf(w, "event: %s\ndata: %s\n\n", event, payload)
+	flusher.Flush()
 }

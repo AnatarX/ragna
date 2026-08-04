@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"net/http"
 	"os"
@@ -8,51 +9,80 @@ import (
 	"syscall"
 	"time"
 
-	mlclient "github.com/AnatarX/ragna/gateway-go/internal/clients/ml_client"
-	httphandler "github.com/AnatarX/ragna/gateway-go/internal/delivery/http"
+	"gateway-go/internal/cache"
+	deliveryHTTP "gateway-go/internal/delivery/http"
+	"gateway-go/internal/grpcclient"
+
+	"github.com/redis/go-redis/v9"
 )
 
 func main() {
-	mlTarget := os.Getenv("ML_GRPC_TARGET")
-	if mlTarget == "" {
-		mlTarget = "localhost:50051"
+	// 1. Считываем переменные окружения с дефолтами
+	redisAddr := getEnv("REDIS_ADDR", "localhost:6379")
+	mlGrpcAddr := getEnv("ML_GRPC_ADDR", "localhost:50051")
+	httpPort := getEnv("HTTP_PORT", "8080")
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// 2. Инициализируем Redis-клиент и Семантический Кэш
+	rdb := redis.NewClient(&redis.Options{
+		Addr: redisAddr,
+	})
+	if err := rdb.Ping(ctx).Err(); err != nil {
+		log.Printf("[WARN] Failed to ping Redis at %s: %v (cache may be unavailable)", redisAddr, err)
+	} else {
+		log.Printf("[INFO] Connected to Redis at %s", redisAddr)
 	}
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-	}
+	semanticCache := cache.NewSemanticCache(rdb)
 
-	log.Printf("Connecting to ML Service at %s...", mlTarget)
-	client, err := mlclient.NewClient(mlTarget)
+	// 3. Подключаем gRPC-клиент к Python ML сервису
+	mlClient, err := grpcclient.New(mlGrpcAddr)
 	if err != nil {
-		log.Fatalf("Failed to create ML client: %v", err)
+		log.Fatalf("[FATAL] Failed to initialize gRPC client: %v", err)
 	}
-	defer client.Close()
+	defer mlClient.Close()
+	log.Printf("[INFO] Connected to ML gRPC service at %s", mlGrpcAddr)
 
-	handler := httphandler.NewHandler(client)
+	// 4. Регистрируем роуты и хэндлеры
+	handler := deliveryHTTP.NewHandler(mlClient, semanticCache)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/api/v1/ingest", handler.HandleIngest)
-	mux.HandleFunc("/api/v1/query/stream", handler.HandleStreamQuery)
+	mux.HandleFunc("/api/v1/query/stream", handler.StreamQuery)
 
-	server := &http.Server{
-		Addr:         ":" + port,
-		Handler:      mux,
-		ReadTimeout:  15 * time.Second,
-		WriteTimeout: 0,
+	srv := &http.Server{
+		Addr:    ":" + httpPort,
+		Handler: mux,
 	}
 
+	// 5. Graceful Shutdown
+	stop := make(chan os.Signal, 1)
+	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
+
 	go func() {
-		log.Printf("API Gateway listening on port %s", port)
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("HTTP server error: %v", err)
+		log.Printf("[INFO] Starting HTTP Gateway on port :%s...", httpPort)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("[FATAL] HTTP server error: %v", err)
 		}
 	}()
 
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 	<-stop
+	log.Println("[INFO] Shutting down HTTP Gateway gracefully...")
 
-	log.Println("Shutting down Gateway...")
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
+
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Printf("[ERROR] Server forced to shutdown: %v", err)
+	}
+
+	log.Println("[INFO] Server stopped.")
+}
+
+func getEnv(key, defaultValue string) string {
+	if val, exists := os.LookupEnv(key); exists && val != "" {
+		return val
+	}
+	return defaultValue
 }

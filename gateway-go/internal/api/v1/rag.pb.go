@@ -2,9 +2,9 @@
 // versions:
 // 	protoc-gen-go v1.36.11
 // 	protoc        v7.35.1
-// source: api/v1/rag.proto
+// source: rag.proto
 
-package ragv1
+package v1
 
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
@@ -32,7 +32,7 @@ type QueryRequest struct {
 
 func (x *QueryRequest) Reset() {
 	*x = QueryRequest{}
-	mi := &file_api_v1_rag_proto_msgTypes[0]
+	mi := &file_rag_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -44,7 +44,7 @@ func (x *QueryRequest) String() string {
 func (*QueryRequest) ProtoMessage() {}
 
 func (x *QueryRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_rag_proto_msgTypes[0]
+	mi := &file_rag_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -57,7 +57,7 @@ func (x *QueryRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryRequest.ProtoReflect.Descriptor instead.
 func (*QueryRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_rag_proto_rawDescGZIP(), []int{0}
+	return file_rag_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *QueryRequest) GetQuery() string {
@@ -93,7 +93,7 @@ type DocumentChunk struct {
 
 func (x *DocumentChunk) Reset() {
 	*x = DocumentChunk{}
-	mi := &file_api_v1_rag_proto_msgTypes[1]
+	mi := &file_rag_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -105,7 +105,7 @@ func (x *DocumentChunk) String() string {
 func (*DocumentChunk) ProtoMessage() {}
 
 func (x *DocumentChunk) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_rag_proto_msgTypes[1]
+	mi := &file_rag_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -118,7 +118,7 @@ func (x *DocumentChunk) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DocumentChunk.ProtoReflect.Descriptor instead.
 func (*DocumentChunk) Descriptor() ([]byte, []int) {
-	return file_api_v1_rag_proto_rawDescGZIP(), []int{1}
+	return file_rag_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *DocumentChunk) GetId() string {
@@ -160,7 +160,7 @@ type QueryResponse struct {
 
 func (x *QueryResponse) Reset() {
 	*x = QueryResponse{}
-	mi := &file_api_v1_rag_proto_msgTypes[2]
+	mi := &file_rag_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -172,7 +172,7 @@ func (x *QueryResponse) String() string {
 func (*QueryResponse) ProtoMessage() {}
 
 func (x *QueryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_rag_proto_msgTypes[2]
+	mi := &file_rag_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -185,7 +185,7 @@ func (x *QueryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use QueryResponse.ProtoReflect.Descriptor instead.
 func (*QueryResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_rag_proto_rawDescGZIP(), []int{2}
+	return file_rag_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *QueryResponse) GetAnswer() string {
@@ -222,7 +222,7 @@ type StreamQueryResponse struct {
 
 func (x *StreamQueryResponse) Reset() {
 	*x = StreamQueryResponse{}
-	mi := &file_api_v1_rag_proto_msgTypes[3]
+	mi := &file_rag_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -234,7 +234,7 @@ func (x *StreamQueryResponse) String() string {
 func (*StreamQueryResponse) ProtoMessage() {}
 
 func (x *StreamQueryResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_rag_proto_msgTypes[3]
+	mi := &file_rag_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -247,7 +247,7 @@ func (x *StreamQueryResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use StreamQueryResponse.ProtoReflect.Descriptor instead.
 func (*StreamQueryResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_rag_proto_rawDescGZIP(), []int{3}
+	return file_rag_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *StreamQueryResponse) GetPayload() isStreamQueryResponse_Payload {
@@ -303,7 +303,7 @@ type IngestRequest struct {
 
 func (x *IngestRequest) Reset() {
 	*x = IngestRequest{}
-	mi := &file_api_v1_rag_proto_msgTypes[4]
+	mi := &file_rag_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -315,7 +315,7 @@ func (x *IngestRequest) String() string {
 func (*IngestRequest) ProtoMessage() {}
 
 func (x *IngestRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_rag_proto_msgTypes[4]
+	mi := &file_rag_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -328,7 +328,7 @@ func (x *IngestRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IngestRequest.ProtoReflect.Descriptor instead.
 func (*IngestRequest) Descriptor() ([]byte, []int) {
-	return file_api_v1_rag_proto_rawDescGZIP(), []int{4}
+	return file_rag_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *IngestRequest) GetDocumentId() string {
@@ -370,7 +370,7 @@ type IngestResponse struct {
 
 func (x *IngestResponse) Reset() {
 	*x = IngestResponse{}
-	mi := &file_api_v1_rag_proto_msgTypes[5]
+	mi := &file_rag_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -382,7 +382,7 @@ func (x *IngestResponse) String() string {
 func (*IngestResponse) ProtoMessage() {}
 
 func (x *IngestResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_api_v1_rag_proto_msgTypes[5]
+	mi := &file_rag_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -395,7 +395,7 @@ func (x *IngestResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use IngestResponse.ProtoReflect.Descriptor instead.
 func (*IngestResponse) Descriptor() ([]byte, []int) {
-	return file_api_v1_rag_proto_rawDescGZIP(), []int{5}
+	return file_rag_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *IngestResponse) GetDocumentId() string {
@@ -419,11 +419,99 @@ func (x *IngestResponse) GetSuccess() bool {
 	return false
 }
 
-var File_api_v1_rag_proto protoreflect.FileDescriptor
+type EmbeddingRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Text          string                 `protobuf:"bytes,1,opt,name=text,proto3" json:"text,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
 
-const file_api_v1_rag_proto_rawDesc = "" +
+func (x *EmbeddingRequest) Reset() {
+	*x = EmbeddingRequest{}
+	mi := &file_rag_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EmbeddingRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EmbeddingRequest) ProtoMessage() {}
+
+func (x *EmbeddingRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_rag_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EmbeddingRequest.ProtoReflect.Descriptor instead.
+func (*EmbeddingRequest) Descriptor() ([]byte, []int) {
+	return file_rag_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *EmbeddingRequest) GetText() string {
+	if x != nil {
+		return x.Text
+	}
+	return ""
+}
+
+type EmbeddingResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Vector        []float32              `protobuf:"fixed32,1,rep,packed,name=vector,proto3" json:"vector,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *EmbeddingResponse) Reset() {
+	*x = EmbeddingResponse{}
+	mi := &file_rag_proto_msgTypes[7]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *EmbeddingResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EmbeddingResponse) ProtoMessage() {}
+
+func (x *EmbeddingResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_rag_proto_msgTypes[7]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EmbeddingResponse.ProtoReflect.Descriptor instead.
+func (*EmbeddingResponse) Descriptor() ([]byte, []int) {
+	return file_rag_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *EmbeddingResponse) GetVector() []float32 {
+	if x != nil {
+		return x.Vector
+	}
+	return nil
+}
+
+var File_rag_proto protoreflect.FileDescriptor
+
+const file_rag_proto_rawDesc = "" +
 	"\n" +
-	"\x10api/v1/rag.proto\x12\x06rag.v1\"\\\n" +
+	"\trag.proto\x12\x06rag.v1\"\\\n" +
 	"\fQueryRequest\x12\x14\n" +
 	"\x05query\x18\x01 \x01(\tR\x05query\x12\x13\n" +
 	"\x05top_k\x18\x02 \x01(\x05R\x04topK\x12!\n" +
@@ -457,60 +545,69 @@ const file_api_v1_rag_proto_rawDesc = "" +
 	"\vdocument_id\x18\x01 \x01(\tR\n" +
 	"documentId\x12%\n" +
 	"\x0echunks_created\x18\x02 \x01(\x05R\rchunksCreated\x12\x18\n" +
-	"\asuccess\x18\x03 \x01(\bR\asuccess2\xc7\x01\n" +
+	"\asuccess\x18\x03 \x01(\bR\asuccess\"&\n" +
+	"\x10EmbeddingRequest\x12\x12\n" +
+	"\x04text\x18\x01 \x01(\tR\x04text\"+\n" +
+	"\x11EmbeddingResponse\x12\x16\n" +
+	"\x06vector\x18\x01 \x03(\x02R\x06vector2\x8c\x02\n" +
 	"\n" +
 	"RagService\x124\n" +
 	"\x05Query\x12\x14.rag.v1.QueryRequest\x1a\x15.rag.v1.QueryResponse\x12B\n" +
 	"\vStreamQuery\x12\x14.rag.v1.QueryRequest\x1a\x1b.rag.v1.StreamQueryResponse0\x01\x12?\n" +
-	"\x0eIngestDocument\x12\x15.rag.v1.IngestRequest\x1a\x16.rag.v1.IngestResponseB9Z7github.com/AnatarX/ragna/gateway-go/pkg/pb/rag/v1;ragv1b\x06proto3"
+	"\x0eIngestDocument\x12\x15.rag.v1.IngestRequest\x1a\x16.rag.v1.IngestResponse\x12C\n" +
+	"\fGetEmbedding\x12\x18.rag.v1.EmbeddingRequest\x1a\x19.rag.v1.EmbeddingResponseB6Z4github.com/AnatarX/ragna/gateway-go/pkg/pb/rag/v1;v1b\x06proto3"
 
 var (
-	file_api_v1_rag_proto_rawDescOnce sync.Once
-	file_api_v1_rag_proto_rawDescData []byte
+	file_rag_proto_rawDescOnce sync.Once
+	file_rag_proto_rawDescData []byte
 )
 
-func file_api_v1_rag_proto_rawDescGZIP() []byte {
-	file_api_v1_rag_proto_rawDescOnce.Do(func() {
-		file_api_v1_rag_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_api_v1_rag_proto_rawDesc), len(file_api_v1_rag_proto_rawDesc)))
+func file_rag_proto_rawDescGZIP() []byte {
+	file_rag_proto_rawDescOnce.Do(func() {
+		file_rag_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_rag_proto_rawDesc), len(file_rag_proto_rawDesc)))
 	})
-	return file_api_v1_rag_proto_rawDescData
+	return file_rag_proto_rawDescData
 }
 
-var file_api_v1_rag_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
-var file_api_v1_rag_proto_goTypes = []any{
+var file_rag_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_rag_proto_goTypes = []any{
 	(*QueryRequest)(nil),        // 0: rag.v1.QueryRequest
 	(*DocumentChunk)(nil),       // 1: rag.v1.DocumentChunk
 	(*QueryResponse)(nil),       // 2: rag.v1.QueryResponse
 	(*StreamQueryResponse)(nil), // 3: rag.v1.StreamQueryResponse
 	(*IngestRequest)(nil),       // 4: rag.v1.IngestRequest
 	(*IngestResponse)(nil),      // 5: rag.v1.IngestResponse
-	nil,                         // 6: rag.v1.DocumentChunk.MetadataEntry
-	nil,                         // 7: rag.v1.IngestRequest.MetadataEntry
+	(*EmbeddingRequest)(nil),    // 6: rag.v1.EmbeddingRequest
+	(*EmbeddingResponse)(nil),   // 7: rag.v1.EmbeddingResponse
+	nil,                         // 8: rag.v1.DocumentChunk.MetadataEntry
+	nil,                         // 9: rag.v1.IngestRequest.MetadataEntry
 }
-var file_api_v1_rag_proto_depIdxs = []int32{
-	6, // 0: rag.v1.DocumentChunk.metadata:type_name -> rag.v1.DocumentChunk.MetadataEntry
+var file_rag_proto_depIdxs = []int32{
+	8, // 0: rag.v1.DocumentChunk.metadata:type_name -> rag.v1.DocumentChunk.MetadataEntry
 	1, // 1: rag.v1.QueryResponse.sources:type_name -> rag.v1.DocumentChunk
 	1, // 2: rag.v1.StreamQueryResponse.source:type_name -> rag.v1.DocumentChunk
-	7, // 3: rag.v1.IngestRequest.metadata:type_name -> rag.v1.IngestRequest.MetadataEntry
+	9, // 3: rag.v1.IngestRequest.metadata:type_name -> rag.v1.IngestRequest.MetadataEntry
 	0, // 4: rag.v1.RagService.Query:input_type -> rag.v1.QueryRequest
 	0, // 5: rag.v1.RagService.StreamQuery:input_type -> rag.v1.QueryRequest
 	4, // 6: rag.v1.RagService.IngestDocument:input_type -> rag.v1.IngestRequest
-	2, // 7: rag.v1.RagService.Query:output_type -> rag.v1.QueryResponse
-	3, // 8: rag.v1.RagService.StreamQuery:output_type -> rag.v1.StreamQueryResponse
-	5, // 9: rag.v1.RagService.IngestDocument:output_type -> rag.v1.IngestResponse
-	7, // [7:10] is the sub-list for method output_type
-	4, // [4:7] is the sub-list for method input_type
+	6, // 7: rag.v1.RagService.GetEmbedding:input_type -> rag.v1.EmbeddingRequest
+	2, // 8: rag.v1.RagService.Query:output_type -> rag.v1.QueryResponse
+	3, // 9: rag.v1.RagService.StreamQuery:output_type -> rag.v1.StreamQueryResponse
+	5, // 10: rag.v1.RagService.IngestDocument:output_type -> rag.v1.IngestResponse
+	7, // 11: rag.v1.RagService.GetEmbedding:output_type -> rag.v1.EmbeddingResponse
+	8, // [8:12] is the sub-list for method output_type
+	4, // [4:8] is the sub-list for method input_type
 	4, // [4:4] is the sub-list for extension type_name
 	4, // [4:4] is the sub-list for extension extendee
 	0, // [0:4] is the sub-list for field type_name
 }
 
-func init() { file_api_v1_rag_proto_init() }
-func file_api_v1_rag_proto_init() {
-	if File_api_v1_rag_proto != nil {
+func init() { file_rag_proto_init() }
+func file_rag_proto_init() {
+	if File_rag_proto != nil {
 		return
 	}
-	file_api_v1_rag_proto_msgTypes[3].OneofWrappers = []any{
+	file_rag_proto_msgTypes[3].OneofWrappers = []any{
 		(*StreamQueryResponse_Delta)(nil),
 		(*StreamQueryResponse_Source)(nil),
 	}
@@ -518,17 +615,17 @@ func file_api_v1_rag_proto_init() {
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_api_v1_rag_proto_rawDesc), len(file_api_v1_rag_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_rag_proto_rawDesc), len(file_rag_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   10,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_api_v1_rag_proto_goTypes,
-		DependencyIndexes: file_api_v1_rag_proto_depIdxs,
-		MessageInfos:      file_api_v1_rag_proto_msgTypes,
+		GoTypes:           file_rag_proto_goTypes,
+		DependencyIndexes: file_rag_proto_depIdxs,
+		MessageInfos:      file_rag_proto_msgTypes,
 	}.Build()
-	File_api_v1_rag_proto = out.File
-	file_api_v1_rag_proto_goTypes = nil
-	file_api_v1_rag_proto_depIdxs = nil
+	File_rag_proto = out.File
+	file_rag_proto_goTypes = nil
+	file_rag_proto_depIdxs = nil
 }
