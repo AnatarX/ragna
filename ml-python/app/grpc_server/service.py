@@ -5,7 +5,7 @@ import grpc
 from app.ingestion.pipeline import IngestionPipeline
 from app.retrieval.hybrid import HybridRetriever
 from app.retrieval.reranker import BGEReranker
-
+from app.generation.llm import LLMGenerator
 from app.grpc_server.api.v1 import rag_pb2
 from app.grpc_server.api.v1 import rag_pb2_grpc
 
@@ -18,6 +18,7 @@ class RagService(rag_pb2_grpc.RagServiceServicer):
         self.ingestion = IngestionPipeline()
         self.retriever = HybridRetriever()
         self.reranker = BGEReranker()
+        self.llm = LLMGenerator()
         logger.info("ML components initialized successfully.")
 
     def IngestDocument(self, request: rag_pb2.IngestRequest, context) -> rag_pb2.IngestResponse:
@@ -55,8 +56,10 @@ class RagService(rag_pb2_grpc.RagServiceServicer):
                 final_docs = candidates[:top_k]
 
             sources = []
+            contexts = []
             for doc in final_docs:
                 score = doc.get("rerank_score", doc.get("score", 0.0))
+                contexts.append(doc["content"])
                 sources.append(
                     rag_pb2.DocumentChunk(
                         id=str(doc["id"]),
@@ -66,10 +69,10 @@ class RagService(rag_pb2_grpc.RagServiceServicer):
                     )
                 )
 
-            mock_answer = f"Found {len(sources)} relevant context chunks for query: '{request.query}'"
+            full_answer = "".join(list(self.llm.generate_stream(query=request.query, contexts=contexts)))
 
             return rag_pb2.QueryResponse(
-                answer=mock_answer,
+                answer=full_answer,
                 sources=sources,
                 confidence_score=sources[0].score if sources else 0.0
             )
@@ -90,7 +93,9 @@ class RagService(rag_pb2_grpc.RagServiceServicer):
                 top_k = request.top_k if request.top_k > 0 else 5
                 final_docs = candidates[:top_k]
 
+            contexts = []
             for doc in final_docs:
+                contexts.append(doc["content"])
                 chunk_msg = rag_pb2.DocumentChunk(
                     id=str(doc["id"]),
                     content=doc["content"],
@@ -99,8 +104,7 @@ class RagService(rag_pb2_grpc.RagServiceServicer):
                 )
                 yield rag_pb2.StreamQueryResponse(source=chunk_msg)
 
-            tokens = ["Context ", "retrieved ", "successfully. ", "Ready ", "for ", "LLM ", "generation."]
-            for token in tokens:
+            for token in self.llm.generate_stream(query=request.query, contexts=contexts):
                 yield rag_pb2.StreamQueryResponse(delta=token)
 
         except Exception as e:

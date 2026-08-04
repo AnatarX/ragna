@@ -1,4 +1,5 @@
 from qdrant_client import QdrantClient
+from qdrant_client.http import models
 from fastembed import TextEmbedding
 from app.core.config import settings
 from typing import List, Dict, Any
@@ -6,25 +7,40 @@ from typing import List, Dict, Any
 class HybridRetriever:
     def __init__(self):
         self.client = QdrantClient(host=settings.QDRANT_HOST, port=settings.QDRANT_PORT)
-        self.embed_model = TextEmbedding(model_name=settings.EMBEDDING_MODEL)
+        self.encoder = TextEmbedding(model_name=settings.EMBEDDING_MODEL)
+        self._ensure_collection()
 
-    def dense_search(self, query: str, top_k: int = 20) -> List[Dict[str, Any]]:
-        query_vector = list(self.embed_model.embed([query]))[0].tolist()
-        
-        search_result = self.client.search(
+    def _ensure_collection(self):
+        collections = [c.name for c in self.client.get_collections().collections]
+        if settings.COLLECTION_NAME not in collections:
+            self.client.create_collection(
+                collection_name=settings.COLLECTION_NAME,
+                vectors_config=models.VectorParams(
+                    size=settings.VECTOR_SIZE,
+                    distance=models.Distance.COSINE
+                )
+            )
+    def dense_search(self, query: str, top_k: int = 5):
+        return self.search(query=query, top_k=top_k)
+    
+    def search(self, query: str, top_k: int = 5):
+        query_vector = list(self.encoder.embed([query]))[0]
+
+        response = self.client.query_points(
             collection_name=settings.COLLECTION_NAME,
-            query_vector=query_vector,
+            query=query_vector.tolist(),
             limit=top_k
         )
-        
+
         results = []
-        for hit in search_result:
+        for point in response.points:
             results.append({
-                "id": hit.id,
-                "content": hit.payload.get("content", ""),
-                "score": hit.score,
-                "metadata": hit.payload.get("metadata", {})
+                "id": str(point.id),
+                "score": point.score,
+                "content": point.payload.get("content", ""),
+                "metadata": point.payload.get("metadata", {})
             })
+
         return results
 
     def rrf_score(self, dense_results: List[Dict[str, Any]], k: int = 60) -> List[Dict[str, Any]]:

@@ -1,9 +1,11 @@
+import uuid
+from typing import List, Dict, Any
 from qdrant_client import QdrantClient
 from qdrant_client.models import Distance, VectorParams, PointStruct
 from fastembed import TextEmbedding
+
 from app.core.config import settings
 from app.ingestion.chunker import TextChunker
-from typing import List, Dict, Any
 
 class IngestionPipeline:
     def __init__(self):
@@ -30,14 +32,17 @@ class IngestionPipeline:
 
         points = []
         for i, chunk in enumerate(chunks):
+            raw_chunk_id = chunk.get("chunk_id", f"{doc_id}_chunk_{i}")
+            point_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, raw_chunk_id))
+
             points.append(
                 PointStruct(
-                    id=chunk["chunk_id"],
+                    id=point_id,
                     vector=embeddings[i].tolist(),
                     payload={
-                        "doc_id": chunk["doc_id"],
+                        "doc_id": chunk.get("doc_id", doc_id),
                         "content": chunk["content"],
-                        "metadata": chunk.get("metadata", {})
+                        "metadata": chunk.get("metadata", {}) or {}
                     }
                 )
             )
